@@ -8,6 +8,11 @@ import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import java.io.File
 
+/**
+ * @author yjz
+ * @Date 2018-06-27 23:14
+ * 调用系统相机拍照以及系统图片裁剪器的工具类
+ */
 object CameraUtils {
     /**启动系统相机请求码 */
     const val PHOTO_GRAPH_REQUEST = 110

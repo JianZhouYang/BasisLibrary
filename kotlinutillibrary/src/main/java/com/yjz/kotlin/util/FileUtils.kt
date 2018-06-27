@@ -2,6 +2,11 @@ package com.yjz.kotlin.util
 
 import java.io.File
 
+/**
+ * @author yjz
+ * @Date 2018-06-27 23:14
+ * File操作工具类
+ */
 object FileUtils {
 
     fun isDirectoryExists(filePath: String): Boolean{
