@@ -11,7 +11,7 @@ object CheckUtils {
      * 检查字符串是否为空
      * @return true: 为空; false: 不为空
      */
-    fun isEmpty(str: CharSequence): Boolean{
+    public fun isEmpty(str: CharSequence?): Boolean{
         return str.isNullOrEmpty();
     }
 }
