@@ -82,7 +82,7 @@ object CameraUtils {
     private fun checkFile(savePath: String): File {
         val file = File(savePath);
         if (!FileUtils.isDirectoryExists(file)) {
-            if (null != file.parentFile) {
+            if (null != file.parentFile && !file.parentFile.exists()) {
                 file.parentFile.mkdirs();
             }
         }
