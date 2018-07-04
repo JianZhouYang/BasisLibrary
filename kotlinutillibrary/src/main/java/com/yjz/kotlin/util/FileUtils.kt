@@ -9,18 +9,31 @@ import java.io.File
  */
 object FileUtils {
 
-    fun isDirectoryExists(filePath: String): Boolean{
-        if (CheckUtils.isEmpty(filePath)) return false;
-        return isDirectoryExists(File(filePath));
+    /**
+     * 文件目录是否存在
+     * @return true:存在 false:不存在
+     */
+    public fun isDirectoryExists(filePath: String): Boolean{
+        return if (!CheckUtils.isEmpty(filePath)) {
+            isDirectoryExists(File(filePath))
+        } else {
+            false
+        }
     }
 
-    fun isDirectoryExists(file: File): Boolean{
-        if (null == file) return false;
-        if (file.isDirectory) {
-            return file.exists();
+    /**
+     * 文件目录是否存在
+     * @return true:存在 false:不存在
+     */
+    public fun isDirectoryExists(file: File): Boolean{
+        return if (null != file) {
+            if (file.isDirectory) {
+                file.exists()
+            } else {
+                file.parentFile?.exists() ?: false
+            }
         } else {
-            val parentFile = file.parentFile ?: return false;
-            return parentFile.exists();
+            false
         }
     }
 }
