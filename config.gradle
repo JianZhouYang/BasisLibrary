@@ -1,24 +1,26 @@
 ext{
     android = [
-        compileSdkVersion: 26,
-        buildToolsVersion: "26.0.2",
+        compileSdkVersion: 27,
+        buildToolsVersion: "27.0.2",
         minSdkVersion    : 14,
-        targetSdkVersion : 26,
-        versionCode : 8,
-        versionName : "1.0.7"
+        targetSdkVersion : 27,
+        versionCode : 1,
+        versionName : "1.0.0"
     ]
     dependencies = [
-            "appcompat-v7": 'com.android.support:appcompat-v7:26.1.0',
-            "recyclerview-v7": 'com.android.support:recyclerview-v7:26.1.0',
+            "appcompat-v7": 'com.android.support:appcompat-v7:27.1.1',
+            "support-v4": 'com.android.support:support-v4:27.1.1',
+            "recyclerview-v7": 'com.android.support:recyclerview-v7:27.1.1',
             "design": 'com.android.support:design:26.1.0',
             "multidex": 'com.android.support:multidex:1.0.2',
             "lifecycle-extensions": 'android.arch.lifecycle:extensions:1.0.0',
-            "constraint-layout": 'com.android.support.constraint:constraint-layout:1.0.2',
+            "constraint-layout": 'com.android.support.constraint:constraint-layout:1.1.0',
             "fresco-fresco": 'com.facebook.fresco:fresco:0.12.0',
             "fresco-imagepipeline-okhttp": 'com.facebook.fresco:imagepipeline-okhttp:0.12.0',
             "fresco-webpsupport": 'com.facebook.fresco:webpsupport:0.12.0',
             "klog": 'com.github.zhaokaiqiang.klog:library:1.5.0',
-            "banner": 'com.youth.banner:banner:1.4.9'
+            "banner": 'com.youth.banner:banner:1.4.9',
+            "okhttp3": 'com.squareup.okhttp3:okhttp:3.11.0'
     ]
 
 }
