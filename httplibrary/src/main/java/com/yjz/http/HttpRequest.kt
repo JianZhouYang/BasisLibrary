@@ -5,40 +5,33 @@ import java.io.File
 /**
  * 请求对象类
  */
-class HttpRequest constructor(private val mBuilder: Builder) {
-    fun getUrl(): String? = mBuilder.mUrl;
+class HttpRequest private constructor(private val mData: RequestData) {
+    fun getUrl(): String? = mData.mUrl
 
-    fun getMethodType(): MethodType = mBuilder.mMethodType;
+    fun getMethodType(): MethodType = mData.mMethodType
 
-    fun getTag(): Any? = mBuilder.mTag
+    fun getTag(): Any? = mData.mTag
 
-    fun isReturnByteArray(): Boolean = mBuilder.mIsReturnByteArray
+    fun isReturnByteArray(): Boolean = mData.mIsReturnByteArray
 
-    fun getHeaders(): MutableMap<String, String> = mBuilder.mHeaders
+    fun getHeaders(): MutableMap<String, String> = mData.mHeaders
 
-    fun getParams(): MutableMap<String, String> = mBuilder.mParams
+    fun getParams(): MutableMap<String, String> = mData.mParams
 
-    fun getUploadFileWrap(): FileWrap? = mBuilder.mUploadFileWrap
+    fun getUploadFileWrap(): FileWrap? = mData.mUploadFileWrap
 
-    fun getDownloadFileWrap(): FileWrap? = mBuilder.mDownloadFileWrap
+    fun getDownloadFileWrap(): FileWrap? = mData.mDownloadFileWrap
 
     open class Builder{
-        internal var mUrl: String? = null
-        internal var mMethodType: MethodType = MethodType.POST
-        internal var mTag: Any? = null
-        internal var mIsReturnByteArray: Boolean = false
-        internal val mHeaders: MutableMap<String, String> = mutableMapOf()
-        internal val mParams: MutableMap<String, String> = mutableMapOf()
-        internal var mUploadFileWrap: FileWrap? = null
-        internal var mDownloadFileWrap: FileWrap? = null
+        private val data = RequestData()
 
         protected open fun setFile(isImg: Boolean, file: File): Builder{
-            mUploadFileWrap = FileWrap(isImg, file)
+            data.mUploadFileWrap = FileWrap(isImg, file)
             return this
         }
 
         protected open fun saveFile(file: File): Builder{
-            mDownloadFileWrap = FileWrap(false, file)
+            data.mDownloadFileWrap = FileWrap(false, file)
             return this
         }
 
@@ -46,7 +39,7 @@ class HttpRequest constructor(private val mBuilder: Builder) {
          * 设置请求地址
          */
         fun setUrl(url: String): Builder{
-            mUrl = url
+            data.mUrl = url
             return this
         }
 
@@ -55,12 +48,12 @@ class HttpRequest constructor(private val mBuilder: Builder) {
          * POST:post请求 GET:get请求；默认post请求
          */
         fun setMethodType(type: MethodType): Builder{
-            mMethodType = type
+            data.mMethodType = type
             return this
         }
 
         fun setTag(tag: Any): Builder{
-            mTag = tag
+            data.mTag = tag
             return this
         }
 
@@ -70,12 +63,12 @@ class HttpRequest constructor(private val mBuilder: Builder) {
          * 默认为false
          */
         fun setReturnBtyeArray(isReturn: Boolean): Builder{
-            mIsReturnByteArray = isReturn
+            data.mIsReturnByteArray = isReturn
             return this
         }
 
         fun addHeader(key: String, value: String): Builder {
-            mHeaders[key] = value
+            data.mHeaders[key] = value
             return this
         }
 
@@ -83,30 +76,42 @@ class HttpRequest constructor(private val mBuilder: Builder) {
          * 添加参数
          */
         fun put(key: String, value: String): Builder{
-            mParams[key] = value
+            data.mParams[key] = value
             return this
         }
 
-        fun create(): HttpRequest = HttpRequest(this)
+        fun create(): HttpRequest = HttpRequest(data)
     }
 
 
 
-    class UploadFileBuilder : Builder(){
-        public override fun setFile(isImg: Boolean, file: File): Builder {
-            return super.setFile(isImg, file)
+    class UploadFileBuilder(isImg: Boolean, file: File) : Builder(){
+        init {
+            super.setFile(isImg, file)
         }
     }
 
-    class DownloadFileBuilder : Builder(){
-        public override fun saveFile(file: File): Builder {
-            return super.saveFile(file)
+    class DownloadFileBuilder(file: File) : Builder(){
+        init {
+            setMethodType(MethodType.GET)
+            super.saveFile(file)
         }
     }
 }
 
+private class RequestData{
+    var mUrl: String? = null
+    var mMethodType: MethodType = MethodType.POST
+    var mTag: Any? = null
+    var mIsReturnByteArray: Boolean = false
+    val mHeaders: MutableMap<String, String> = mutableMapOf()
+    val mParams: MutableMap<String, String> = mutableMapOf()
+    var mUploadFileWrap: FileWrap? = null
+    var mDownloadFileWrap: FileWrap? = null
+}
 
- class FileWrap(val isImg: Boolean, val file: File){
+
+class FileWrap(val isImg: Boolean, val file: File){
     fun getFileName(): String{
         return file.name
     }
