@@ -6,7 +6,7 @@ import java.io.File
  * 请求对象类
  */
 class HttpRequest private constructor(private val mData: RequestData) {
-    fun getUrl(): String? = mData.mUrl
+    fun getUrl(): String = mData.mUrl
 
     fun getMethodType(): MethodType = mData.mMethodType
 
@@ -84,7 +84,6 @@ class HttpRequest private constructor(private val mData: RequestData) {
     }
 
 
-
     class UploadFileBuilder(isImg: Boolean, file: File) : Builder(){
         init {
             super.setFile(isImg, file)
@@ -100,7 +99,7 @@ class HttpRequest private constructor(private val mData: RequestData) {
 }
 
 private class RequestData{
-    var mUrl: String? = null
+    var mUrl: String = ""
     var mMethodType: MethodType = MethodType.POST
     var mTag: Any? = null
     var mIsReturnByteArray: Boolean = false
