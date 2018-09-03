@@ -1,15 +1,10 @@
 package com.yjz.http.client
 
-import com.yjz.http.ErrorCode
-import com.yjz.http.HttpRequest
-import com.yjz.http.MethodType
+import com.yjz.http.*
 import com.yjz.http.callback.DownloadCallback
 import com.yjz.http.callback.ResponseCallback
-import com.yjz.http.createGetUrl
 import okhttp3.*
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -166,7 +161,10 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
                         if (null == request.getDownloadFileWrap()) {
                             callback?.onError(ErrorCode.DOWNLOAD_ERROR.code, ErrorCode.DOWNLOAD_ERROR.getErrorMsg())
                         } else {
-                            if (saveFile(response, request, callback)) {
+                            if (downLoadSaveFile(response.body()!!.byteStream(),
+                                            Integer.valueOf(response.header("Content-Length", "-1")).toLong(),
+                                            request,
+                                            callback)) {
                                 callback?.onSuccess(response.code(), "download success......")
                             } else {
                                 callback?.onError(ErrorCode.DOWNLOAD_ERROR.code, ErrorCode.DOWNLOAD_ERROR.getErrorMsg())
@@ -181,40 +179,5 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
                 }
             }
         })
-    }
-
-    private fun saveFile(response: Response, request: HttpRequest, callback: DownloadCallback?): Boolean {
-        var isSuccess = true
-        var inputStream: InputStream?
-        var fos: FileOutputStream?
-        var buf = ByteArray(100)
-        var len = 0//本次读取的字节数
-        var currSize: Long = 0//当前已经读取的字节数
-        //总大小
-        var totalSize = Integer.valueOf(response.header("Content-Length", "-1")).toLong()
-        try {
-            val file = request.getDownloadFileWrap()!!.file
-            val dir = file.parentFile
-            if (!dir.exists()) {
-                dir.mkdirs()
-            }
-            fos = file.outputStream()
-            inputStream = response.body()!!.byteStream() //获取返回的Stream
-            inputStream.use {input ->
-                fos.use {
-                    while (input.read(buf).also { len = it } != -1){
-                        it.write(buf, 0, len)
-                        currSize += len
-                        callback?.onProgress(currSize, totalSize, len == -1)
-                    }
-                }
-            }
-            fos!!.flush()
-            callback?.onProgress(currSize, totalSize, len == -1)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            isSuccess = false
-        }
-        return isSuccess
     }
 }

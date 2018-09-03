@@ -1,17 +1,23 @@
 package com.yjz.http.client
 
-import com.yjz.http.HttpRequest
+import com.yjz.http.*
 import com.yjz.http.callback.DownloadCallback
 import com.yjz.http.callback.ResponseCallback
-import com.yjz.http.createGetUrl
 import com.yjz.http.iface.IHttpClient
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
+import java.net.URLEncoder
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class UrlConnectionClient : IHttpClient<URLConnection?> {
+    private val mExecutorService: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+
+
     override fun getHttpClient(): URLConnection? = null
 
     override fun <T> get(request: HttpRequest): T? {
@@ -23,29 +29,64 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun get(request: HttpRequest, callback: ResponseCallback?) {
-        val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
-        con.requestMethod = "GET"
-        con.doOutput = false
-        con.doInput = true
-        con.connect()
-        val responseCode  = con.responseCode
-        if (HttpURLConnection.HTTP_OK == responseCode) {
-            val reader = BufferedReader(InputStreamReader(con.inputStream))
-            val sb = StringBuffer()
-            var line: String? = ""
-            reader.use {
-                while (it.readLine().also { line = it } != null){
-                    sb.append(line)
+        mExecutorService.execute{
+            val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
+            con.requestMethod = "GET"
+            con.doOutput = false
+            con.doInput = true
+            con.connect()
+            val responseCode  = con.responseCode
+            if (HttpURLConnection.HTTP_OK == responseCode) {
+                val reader = BufferedReader(InputStreamReader(con.inputStream))
+                val sb = StringBuffer()
+                var line: String? = ""
+                reader.use {
+                    while (it.readLine().also { line = it } != null){
+                        sb.append(line)
+                    }
                 }
+                callback?.onSuccess(responseCode, sb.toString())
+            } else {
+                callback?.onError(responseCode, con.responseMessage)
             }
-            callback?.onSuccess(responseCode, sb.toString())
-        } else {
-            callback?.onError(responseCode, con.responseMessage)
+            con.disconnect()
         }
     }
 
     override fun post(request: HttpRequest, callback: ResponseCallback?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        mExecutorService.execute{
+            val con = createConnection(request.getUrl())
+            con.requestMethod = "POST"
+            con.doOutput = true
+            con.doInput = true
+            val sb = StringBuilder()
+            val map = request.getParams()
+            for ((key, value) in map) {
+                sb.append("&$key=").append(URLEncoder.encode(value))
+            }
+            if (sb.isNotEmpty()) {
+                sb.deleteCharAt(0)
+            }
+            val out = PrintWriter(con.outputStream)
+            out.print(sb.toString())
+            out.flush()
+
+            val responseCode  = con.responseCode
+            if (HttpURLConnection.HTTP_OK == responseCode) {
+                val reader = BufferedReader(InputStreamReader(con.inputStream))
+                val sb = StringBuffer()
+                var line: String? = ""
+                reader.use {
+                    while (it.readLine().also { line = it } != null){
+                        sb.append(line)
+                    }
+                }
+                callback?.onSuccess(responseCode, sb.toString())
+            } else {
+                callback?.onError(responseCode, con.responseMessage)
+            }
+            con.disconnect()
+        }
     }
 
     override fun cancel(tag: String) {
@@ -57,7 +98,46 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun download(request: HttpRequest, callback: DownloadCallback?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        request.getDownloadFileWrap()?.let {
+            processDownload(request, callback)
+        } ?: throw IllegalArgumentException("请使用DownloadFileBuilder对象创建request......")
+    }
+
+    private fun processDownload(request: HttpRequest, callback: DownloadCallback?){
+        mExecutorService.execute{
+            val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
+            if (request.getMethodType() == MethodType.GET) {
+                con.requestMethod = "GET"
+                con.doOutput = false
+                con.doInput = true
+            } else {
+                con.requestMethod = "POST"
+            }
+            con.connect()
+            val responseCode  = con.responseCode
+            if (HttpURLConnection.HTTP_OK == responseCode) {
+                if (null == request.getDownloadFileWrap()) {
+                    callback?.onError(ErrorCode.DOWNLOAD_ERROR.code, ErrorCode.DOWNLOAD_ERROR.getErrorMsg())
+                } else {
+                    var size: Long = -1L
+                    val list: MutableList<String>? = con.headerFields["Content-Length"]
+                    list?.let {
+                        size = Integer.valueOf(it[0]).toLong()
+                    }
+                    if (downLoadSaveFile(con.inputStream,
+                                    size,
+                                    request,
+                                    callback)) {
+                        callback?.onSuccess(responseCode, "download success......")
+                    } else {
+                        callback?.onError(ErrorCode.DOWNLOAD_ERROR.code, ErrorCode.DOWNLOAD_ERROR.getErrorMsg())
+                    }
+                }
+            } else {
+                callback?.onError(responseCode, con.responseMessage)
+            }
+            con.disconnect()
+        }
     }
 
     private fun createConnection(url: String): HttpURLConnection{

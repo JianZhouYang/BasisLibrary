@@ -12,7 +12,11 @@ object HttpUtils : IHttpOperate {
     private var mClient: IHttpClient<*>? = null
 
     fun <T>initialization(client: IHttpClient<T>) {
-        mClient = client
+        if (null != mClient) {
+            throw IllegalArgumentException("HttpClient已经初始化，无法重复进行初始化操作！")
+        } else {
+            mClient = client
+        }
     }
 
     override fun <T> get(request: HttpRequest): T? {
