@@ -3,6 +3,7 @@ package com.yjz.http.client
 import com.yjz.http.*
 import com.yjz.http.callback.DownloadCallback
 import com.yjz.http.callback.ResponseCallback
+import com.yjz.http.callback.SimpleResponseCallback
 import okhttp3.*
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -111,6 +112,9 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
     }
 
     private fun processRequest(request: HttpRequest, callback: ResponseCallback?){
+        if (null != callback && callback is SimpleResponseCallback) {
+            callback.onStart()
+        }
         mOkHttpClient.newCall(conversionRequest(request)).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()

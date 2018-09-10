@@ -3,7 +3,9 @@ package com.yjz.http.client
 import com.yjz.http.*
 import com.yjz.http.callback.DownloadCallback
 import com.yjz.http.callback.ResponseCallback
+import com.yjz.http.callback.SimpleResponseCallback
 import com.yjz.http.iface.IHttpClient
+import okhttp3.internal.Util
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.PrintWriter
@@ -11,12 +13,19 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
 import java.net.URLEncoder
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 class UrlConnectionClient : IHttpClient<URLConnection?> {
-    private val mExecutorService: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+    private var mExecutorService: ExecutorService? = null
 
+    @Synchronized
+    private fun executorService(): ExecutorService{
+        if (null == mExecutorService) {
+            mExecutorService = ThreadPoolExecutor(0, Integer.MAX_VALUE, 60,
+                    TimeUnit.SECONDS, SynchronousQueue<Runnable>(), Util.threadFactory("UrlConnection Dispatcher", false))
+        }
+        return mExecutorService!!
+    }
 
     override fun getHttpClient(): URLConnection? = null
 
@@ -29,7 +38,10 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun get(request: HttpRequest, callback: ResponseCallback?) {
-        mExecutorService.execute{
+        if (null != callback && callback is SimpleResponseCallback) {
+            callback.onStart()
+        }
+        executorService().execute{
             val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
             con.requestMethod = "GET"
             con.doOutput = false
@@ -54,7 +66,10 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun post(request: HttpRequest, callback: ResponseCallback?) {
-        mExecutorService.execute{
+        if (null != callback && callback is SimpleResponseCallback) {
+            callback.onStart()
+        }
+        executorService().execute{
             val con = createConnection(request.getUrl())
             con.requestMethod = "POST"
             con.doOutput = true
@@ -104,7 +119,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     private fun processDownload(request: HttpRequest, callback: DownloadCallback?){
-        mExecutorService.execute{
+        executorService().execute{
             val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
             if (request.getMethodType() == MethodType.GET) {
                 con.requestMethod = "GET"
