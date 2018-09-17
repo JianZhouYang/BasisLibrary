@@ -1,7 +1,7 @@
-package com.yjz.http.client
+package com.yjz.support.support.http.client
 
-import com.yjz.http.ErrorCode
-import com.yjz.http.callback.ResponseCallback
+import com.yjz.support.http.ErrorCode
+import com.yjz.support.http.callback.ResponseCallback
 import okhttp3.*
 import java.io.IOException
 import java.net.SocketTimeoutException

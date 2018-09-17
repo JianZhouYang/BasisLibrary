@@ -1,9 +1,10 @@
-package com.yjz.http
+package com.yjz.support.http
 
-import com.yjz.http.callback.DownloadCallback
-import com.yjz.http.callback.ResponseCallback
-import com.yjz.http.iface.IHttpClient
-import com.yjz.http.iface.IHttpOperate
+import com.yjz.support.http.callback.DownloadCallback
+import com.yjz.support.http.callback.ResponseCallback
+import com.yjz.support.http.iface.IHttpClient
+import com.yjz.support.http.iface.IHttpOperate
+
 
 /**
  * http工具类

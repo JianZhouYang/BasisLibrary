@@ -1,4 +1,4 @@
-package com.yjz.http
+package com.yjz.support.http
 
 enum class ErrorCode(var code: Int) {
     TIME_OUT(4001) {

@@ -1,4 +1,5 @@
-package com.yjz.http.iface
+package com.yjz.support.http.iface
+
 
 interface IHttpClient<out T> : IHttpOperate {
 

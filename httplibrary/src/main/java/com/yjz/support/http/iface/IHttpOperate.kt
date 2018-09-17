@@ -1,8 +1,9 @@
-package com.yjz.http.iface
+package com.yjz.support.http.iface
 
-import com.yjz.http.HttpRequest
-import com.yjz.http.callback.DownloadCallback
-import com.yjz.http.callback.ResponseCallback
+import com.yjz.support.http.HttpRequest
+import com.yjz.support.http.callback.DownloadCallback
+import com.yjz.support.http.callback.ResponseCallback
+
 
 interface IHttpOperate{
 

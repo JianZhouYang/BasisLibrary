@@ -1,10 +1,10 @@
-package com.yjz.http.client
+package com.yjz.support.http.client
 
-import com.yjz.http.*
-import com.yjz.http.callback.DownloadCallback
-import com.yjz.http.callback.ResponseCallback
-import com.yjz.http.callback.SimpleResponseCallback
-import com.yjz.http.iface.IHttpClient
+import com.yjz.support.http.*
+import com.yjz.support.http.callback.DownloadCallback
+import com.yjz.support.http.callback.ResponseCallback
+import com.yjz.support.http.callback.SimpleResponseCallback
+import com.yjz.support.http.iface.IHttpClient
 import okhttp3.internal.Util
 import java.io.BufferedReader
 import java.io.InputStreamReader

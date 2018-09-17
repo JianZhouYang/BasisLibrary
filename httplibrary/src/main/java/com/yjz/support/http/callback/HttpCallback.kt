@@ -1,4 +1,4 @@
-package com.yjz.http.callback
+package com.yjz.support.http.callback
 
 
 interface ResponseCallback {

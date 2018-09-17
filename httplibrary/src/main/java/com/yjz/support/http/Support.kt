@@ -1,6 +1,6 @@
-package com.yjz.http
+package com.yjz.support.http
 
-import com.yjz.http.callback.DownloadCallback
+import com.yjz.support.http.callback.DownloadCallback
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URLEncoder

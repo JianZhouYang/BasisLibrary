@@ -1,7 +1,7 @@
-package com.yjz.http.client
+package com.yjz.support.http.client
 
-import com.yjz.http.HttpRequest
-import com.yjz.http.iface.IHttpClient
+import com.yjz.support.http.HttpRequest
+import com.yjz.support.http.iface.IHttpClient
 
 abstract class BaseHttpClient<out E, T> : IHttpClient<T> {
     protected abstract fun conversionRequest(request: HttpRequest): E

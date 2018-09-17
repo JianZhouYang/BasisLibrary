@@ -1,9 +1,10 @@
-package com.yjz.http.client
+package com.yjz.support.http.client
 
-import com.yjz.http.*
-import com.yjz.http.callback.DownloadCallback
-import com.yjz.http.callback.ResponseCallback
-import com.yjz.http.callback.SimpleResponseCallback
+import com.yjz.support.http.*
+import com.yjz.support.http.callback.DownloadCallback
+import com.yjz.support.http.callback.ResponseCallback
+import com.yjz.support.http.callback.SimpleResponseCallback
+import com.yjz.support.support.http.client.OkHttpHelper
 import okhttp3.*
 import java.io.IOException
 import java.net.SocketTimeoutException
