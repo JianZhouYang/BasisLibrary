@@ -24,6 +24,10 @@ interface DownloadCallback : ResponseCallback{
     fun onProgress(bytesRead: Long, contentLength: Long, isDone: Boolean)
 }
 
+interface UploadCallback : ResponseCallback{
+    fun onProgress(bytesWritten: Long, contentLength: Long, done: Boolean)
+}
+
 interface SimpleResponseCallback : ResponseCallback{
     /**
      * 请求开始之前

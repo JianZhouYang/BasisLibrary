@@ -4,6 +4,7 @@ import com.yjz.support.http.*
 import com.yjz.support.http.callback.DownloadCallback
 import com.yjz.support.http.callback.ResponseCallback
 import com.yjz.support.http.callback.SimpleResponseCallback
+import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.support.http.client.OkHttpHelper
 import okhttp3.*
 import java.io.IOException
@@ -74,6 +75,36 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
         } ?: throw IllegalArgumentException("请使用DownloadFileBuilder对象创建request......")
     }
 
+    override fun upload(request: HttpRequest, callback: UploadCallback?) {
+        request.getUploadFileWrap()?.let {
+            val builder = mOkHttpClient.newBuilder()
+            builder.addInterceptor {
+                val original = it.request()
+                it.proceed(original.newBuilder().method(original.method(),
+                        ProgressRequestBody(original.body()!!, callback)).build())
+            }
+
+            builder.build().newCall(conversionRequest(request)).enqueue(object : Callback{
+                override fun onFailure(call: Call?, e: IOException) {
+                    e.printStackTrace()
+                    processFailure(e, callback)
+                }
+
+                override fun onResponse(call: Call?, response: Response?) {
+                    if (null != response) {
+                        if (response.isSuccessful) {
+                            callback?.onSuccess(response.code(), response.body()?.string())
+                        } else {
+                            callback?.onError(response.code(), response.message())
+                        }
+                    } else {
+                        callback?.onError(ErrorCode.CONNECT_ERROR.code, ErrorCode.CONNECT_ERROR.getErrorMsg())
+                    }
+                }
+            })
+        } ?: throw IllegalArgumentException("请使用UploadFileBuilder对象创建request......")
+    }
+
     private val mOkHttpClient: OkHttpClient = OkHttpClient
             .Builder()
             .connectTimeout(10*1000, TimeUnit.MILLISECONDS)
@@ -92,16 +123,14 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
         for ((k,v) in request.getParams()) {
             builder.add(k, v)
         }
-        return if (null != request.getUploadFileWrap()) {
+
+        return request.getUploadFileWrap()?.let {
             val mBuilder = MultipartBody.Builder()
             mBuilder.setType(MultipartBody.FORM)
             mBuilder.addPart(builder.build())
-            mBuilder.addFormDataPart("file", request.getUploadFileWrap()!!.getFileName(),
-                    RequestBody.create(getMediaType(request.getUploadFileWrap()!!.isImg), request.getUploadFileWrap()!!.file))
+            mBuilder.addFormDataPart("file", it.getFileName(),RequestBody.create(getMediaType(it.isImg), it.file))
             mBuilder.build()
-        } else {
-            builder.build()
-        }
+        } ?: builder.build()
     }
 
     private fun getMediaType(isImg: Boolean): MediaType? {

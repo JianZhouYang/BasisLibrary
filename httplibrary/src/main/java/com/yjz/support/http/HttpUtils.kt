@@ -2,6 +2,7 @@ package com.yjz.support.http
 
 import com.yjz.support.http.callback.DownloadCallback
 import com.yjz.support.http.callback.ResponseCallback
+import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.http.iface.IHttpClient
 import com.yjz.support.http.iface.IHttpOperate
 
@@ -10,6 +11,7 @@ import com.yjz.support.http.iface.IHttpOperate
  * http工具类
  */
 object HttpUtils : IHttpOperate {
+
     private var mClient: IHttpClient<*>? = null
 
     fun <T>initialization(client: IHttpClient<T>) {
@@ -47,6 +49,8 @@ object HttpUtils : IHttpOperate {
     override fun cancelAll() = mClient?.cancelAll() ?: throwError()
 
     override fun download(request: HttpRequest, callback: DownloadCallback?) = mClient?.download(request, callback) ?: throwError()
+
+    override fun upload(request: HttpRequest, callback: UploadCallback?) = mClient?.upload(request, callback) ?: throwError()
 
     private fun throwError(){
         throw IllegalArgumentException("HttpClient没有初始化，请先调用initialization()方法进行初始化操作！")

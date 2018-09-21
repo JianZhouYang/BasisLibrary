@@ -3,6 +3,7 @@ package com.yjz.support.http.iface
 import com.yjz.support.http.HttpRequest
 import com.yjz.support.http.callback.DownloadCallback
 import com.yjz.support.http.callback.ResponseCallback
+import com.yjz.support.http.callback.UploadCallback
 
 
 interface IHttpOperate{
@@ -41,4 +42,9 @@ interface IHttpOperate{
      * 下载文件
      */
     fun download(request: HttpRequest, callback: DownloadCallback?)
+
+    /**
+     * 上传文件
+     */
+    fun upload(request: HttpRequest, callback: UploadCallback?)
 }
