@@ -4,6 +4,7 @@ import com.yjz.support.http.*
 import com.yjz.support.http.callback.DownloadCallback
 import com.yjz.support.http.callback.ResponseCallback
 import com.yjz.support.http.callback.SimpleResponseCallback
+import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.http.iface.IHttpClient
 import okhttp3.internal.Util
 import java.io.BufferedReader
@@ -27,7 +28,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
         return mExecutorService!!
     }
 
-    override fun getHttpClient(): URLConnection? = null
+    override fun getRealHttpClient(): URLConnection? = null
 
     override fun <T> get(request: HttpRequest): T? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -109,6 +110,10 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun cancelAll() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun upload(request: HttpRequest, callback: UploadCallback?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

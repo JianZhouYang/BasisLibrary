@@ -25,12 +25,12 @@ class HttpRequest private constructor(private val mData: RequestData) {
     open class Builder{
         private val data = RequestData()
 
-        protected open fun setFile(isImg: Boolean, file: File): Builder{
+        protected open fun setUploadFile(isImg: Boolean, file: File): Builder{
             data.mUploadFileWrap = FileWrap(isImg, file)
             return this
         }
 
-        protected open fun saveFile(file: File): Builder{
+        protected open fun setDownloadSaveFile(file: File): Builder{
             data.mDownloadFileWrap = FileWrap(false, file)
             return this
         }
@@ -86,14 +86,14 @@ class HttpRequest private constructor(private val mData: RequestData) {
 
     class UploadFileBuilder(isImg: Boolean, file: File) : Builder(){
         init {
-            super.setFile(isImg, file)
+            super.setUploadFile(isImg, file)
         }
     }
 
     class DownloadFileBuilder(file: File) : Builder(){
         init {
             setMethodType(MethodType.GET)
-            super.saveFile(file)
+            super.setDownloadSaveFile(file)
         }
     }
 }

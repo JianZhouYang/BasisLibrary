@@ -6,7 +6,6 @@ import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.http.iface.IHttpClient
 import com.yjz.support.http.iface.IHttpOperate
 
-
 /**
  * http工具类
  */
@@ -22,9 +21,18 @@ object HttpUtils : IHttpOperate {
         }
     }
 
+    fun <T>getRealHttpClient(): T?{
+        return if (null != mClient) {
+            mClient!!.getRealHttpClient() as T?
+        } else {
+            throwError()
+            null
+        }
+    }
+
     override fun <T> get(request: HttpRequest): T? {
         return if (null != mClient) {
-            mClient?.get(request)
+            mClient!!.get(request)
         } else {
             throwError()
             null
@@ -33,7 +41,7 @@ object HttpUtils : IHttpOperate {
 
     override fun <T> post(request: HttpRequest): T? {
         return if (null != mClient) {
-            mClient?.post(request)
+            mClient!!.post(request)
         } else {
             throwError()
             null

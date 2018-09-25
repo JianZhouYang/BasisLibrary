@@ -5,7 +5,7 @@ import com.yjz.support.http.callback.DownloadCallback
 import com.yjz.support.http.callback.ResponseCallback
 import com.yjz.support.http.callback.SimpleResponseCallback
 import com.yjz.support.http.callback.UploadCallback
-import com.yjz.support.support.http.client.OkHttpHelper
+import com.yjz.support.http.iface.IHttpClient
 import okhttp3.*
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -13,27 +13,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 
-class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
-
-    override fun conversionRequest(request: HttpRequest): Request {
-        val builder = Request.Builder()
-
-        if (null != request.getTag()) {
-            builder.tag(request.getTag())
-        }
-
-        if (request.getHeaders().isNotEmpty()) {
-            request.getHeaders().forEach{
-                builder.addHeader(it.key, it.value)
-            }
-        }
-
-        return if (request.getMethodType() == MethodType.POST) {
-            builder.post(createPostRequestBody(request)).url(request.getUrl()).build()
-        }else {
-            builder.url(createGetUrl(request.getUrl(), request.getParams())).build()
-        }
-    }
+class DefaultOkHttpClient : IHttpClient<OkHttpClient> {
 
     override fun <T> get(request: HttpRequest): T? = mOkHttpClient.newCall(conversionRequest(request)).execute() as? T
 
@@ -112,9 +92,7 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
             .writeTimeout(10*1000,TimeUnit.MILLISECONDS)
             .build()
 
-    private val mOkhttpHelper: OkHttpHelper = OkHttpHelper(mOkHttpClient)
-
-    override fun getHttpClient(): OkHttpClient = mOkHttpClient
+    override fun getRealHttpClient(): OkHttpClient = mOkHttpClient
 
     /**--------------------------------------------------------------------------------------------*/
 
@@ -213,5 +191,25 @@ class DefaultOkHttpClient : BaseHttpClient<Request, OkHttpClient>() {
                 }
             }
         })
+    }
+
+    private fun conversionRequest(request: HttpRequest): Request {
+        val builder = Request.Builder()
+
+        if (null != request.getTag()) {
+            builder.tag(request.getTag())
+        }
+
+        if (request.getHeaders().isNotEmpty()) {
+            request.getHeaders().forEach{
+                builder.addHeader(it.key, it.value)
+            }
+        }
+
+        return if (request.getMethodType() == MethodType.POST) {
+            builder.post(createPostRequestBody(request)).url(request.getUrl()).build()
+        }else {
+            builder.url(createGetUrl(request.getUrl(), request.getParams())).build()
+        }
     }
 }
