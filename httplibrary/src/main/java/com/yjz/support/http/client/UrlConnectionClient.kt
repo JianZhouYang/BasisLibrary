@@ -7,9 +7,7 @@ import com.yjz.support.http.callback.SimpleResponseCallback
 import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.http.iface.IHttpClient
 import okhttp3.internal.Util
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.PrintWriter
+import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLConnection
@@ -114,7 +112,53 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     }
 
     override fun upload(request: HttpRequest, callback: UploadCallback?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        request.getUploadFileWrap()?.let {
+            //TODO
+            executorService().execute {
+                val towHyphens = "--"   // 定义连接字符串
+                val boundary = "******" // 定义分界线字符串
+                val end = "\r\n"
+                val con = createConnection(request.getUrl())
+                con.requestMethod = "POST"
+                con.doOutput = true
+                con.doInput = true
+                con.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
+
+                val sb = StringBuilder()
+                val map = request.getParams()
+                for ((key, value) in map) {
+                    sb.append("&$key=").append(URLEncoder.encode(value))
+                }
+                if (sb.isNotEmpty()) {
+                    sb.deleteCharAt(0)
+                }
+
+                val ds = DataOutputStream(con.outputStream)
+                ds.writeUTF(sb.toString())
+                ds.writeBytes(towHyphens + boundary + end)
+                ds.writeBytes("Content-Disposition: form-data; " + "name=\"file\";filename=\"" + it.getFileName() + "\"" + end)
+                ds.writeBytes(end)
+
+                val fStream = FileInputStream(it.file)
+                val bufferSize = 1024
+                val buffer = ByteArray(bufferSize)
+                var len = -1
+                var currSize: Long = 0//当前已经读取的字节数
+                val totalSize: Long = it.file.length()
+                fStream.use { fs ->
+                    ds.use {
+                        while (fs.read(buffer).also { len = it } != -1){
+                            it.write(buffer, 0, len)
+                            currSize += len
+                            callback?.onProgress(currSize, totalSize, len == -1)
+                        }
+                    }
+                }
+                ds.writeBytes(end)
+                ds.flush()
+                callback?.onProgress(currSize, totalSize, len == -1)
+            }
+        } ?: throw IllegalArgumentException("请使用UploadFileBuilder对象创建request......")
     }
 
     override fun download(request: HttpRequest, callback: DownloadCallback?) {
