@@ -73,6 +73,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
             con.requestMethod = "POST"
             con.doOutput = true
             con.doInput = true
+            con.useCaches = false
             val sb = StringBuilder()
             val map = request.getParams()
             for ((key, value) in map) {
@@ -113,7 +114,6 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
 
     override fun upload(request: HttpRequest, callback: UploadCallback?) {
         request.getUploadFileWrap()?.let {
-            //TODO
             executorService().execute {
                 val towHyphens = "--"   // 定义连接字符串
                 val boundary = "******" // 定义分界线字符串
@@ -122,6 +122,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 con.requestMethod = "POST"
                 con.doOutput = true
                 con.doInput = true
+                con.useCaches = false
                 con.setRequestProperty("Content-Type", "multipart/form-data;boundary=$boundary")
 
                 val sb = StringBuilder()
@@ -134,7 +135,9 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 }
 
                 val ds = DataOutputStream(con.outputStream)
-                ds.writeUTF(sb.toString())
+                ds.writeBytes(sb.toString())
+                ds.flush()
+
                 ds.writeBytes(towHyphens + boundary + end)
                 ds.writeBytes("Content-Disposition: form-data; " + "name=\"file\";filename=\"" + it.getFileName() + "\"" + end)
                 ds.writeBytes(end)
@@ -155,8 +158,12 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                     }
                 }
                 ds.writeBytes(end)
+                ds.writeBytes(towHyphens + boundary + towHyphens + end)
                 ds.flush()
                 callback?.onProgress(currSize, totalSize, len == -1)
+
+                //TODO 接收返回信息
+
             }
         } ?: throw IllegalArgumentException("请使用UploadFileBuilder对象创建request......")
     }
