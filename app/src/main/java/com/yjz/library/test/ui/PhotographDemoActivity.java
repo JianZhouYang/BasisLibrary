@@ -9,16 +9,16 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
-
-import com.yjz.kotlin.util.CameraUtils;
+import com.yjz.support.util.CameraUtils;
+import com.yjz.library.test.BuildConfig;
 import com.yjz.library.test.R;
-
 import java.io.File;
 
 public class PhotographDemoActivity extends AppCompatActivity {
     private ImageView mShowPhotoIv;
     private String savePath;
     private String cutSavePath;
+    private String fileProvider = BuildConfig.APPLICATION_ID + ".fileProvider";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,7 +31,7 @@ public class PhotographDemoActivity extends AppCompatActivity {
         mShowPhotoIv = findViewById(R.id.iv_show_photo);
 
         findViewById(R.id.btn_take_a_photo).setOnClickListener(v -> {
-            CameraUtils.INSTANCE.photograph(PhotographDemoActivity.this, savePath, CameraUtils.PHOTO_GRAPH_REQUEST);
+            CameraUtils.INSTANCE.capture(PhotographDemoActivity.this, savePath, fileProvider, CameraUtils.PHOTO_GRAPH_REQUEST);
         });
 
     }
@@ -39,7 +39,7 @@ public class PhotographDemoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CameraUtils.PHOTO_GRAPH_REQUEST && resultCode == Activity.RESULT_OK) {
-            CameraUtils.INSTANCE.cutting(this, new File(savePath), cutSavePath, 100, 100, CameraUtils.PHOTO_CUTTING_REQUEST);
+            CameraUtils.INSTANCE.crop(this, new File(savePath), cutSavePath, 100, 100, fileProvider, CameraUtils.PHOTO_CUTTING_REQUEST);
         } else if (requestCode == CameraUtils.PHOTO_CUTTING_REQUEST && resultCode == Activity.RESULT_OK) {
             Bitmap bitmap = BitmapFactory.decodeFile(cutSavePath);
             if (null != bitmap) {
