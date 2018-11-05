@@ -1,1 +1,1 @@
-include ':app', ':uilibrary', ':utilslibrary', ':kotlinutillibrary', ':imageloader', ':httplibrary'
+include ':app', ':uilibrary', ':kotlinutillibrary', ':imageloader', ':httplibrary'
