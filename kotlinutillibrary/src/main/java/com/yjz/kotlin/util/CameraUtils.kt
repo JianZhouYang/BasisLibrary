@@ -23,16 +23,16 @@ object CameraUtils {
      * 相机拍照
      * @param activity
      * @param savePath 图片保存的完整路径 eg:/storage/sdcard0/Android/data/com.yjz.test(包名)/temp/test.jpg
+     * @param fileProvider eg: packageName + ".fileProvider"
      * @param requestCode
      */
-    fun photograph(activity: Activity, savePath: String, requestCode: Int){
+    fun capture(activity: Activity, savePath: String, fileProvider: String, requestCode: Int){
         val file = checkFile(savePath);
 
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         val uri: Uri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val packageName = activity.packageName;
-            uri = FileProvider.getUriForFile(activity, "$packageName.fileProvider", file);
+            uri = FileProvider.getUriForFile(activity, fileProvider, file);
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
         } else {
             uri = Uri.fromFile(file);
@@ -47,19 +47,20 @@ object CameraUtils {
     /**
      * 启动照片裁剪
      * @param activity
-     * @param srcFile
-     * @param savePath
-     * @param width
-     * @param height
+     * @param srcFile 源图片文件
+     * @param savePath 图片裁剪后保存路径
+     * @param width 裁剪图片宽
+     * @param height 裁剪图片高
+     * @param fileProvider eg: packageName + ".fileProvider"
      * @param requestCode
      */
-    fun cutting(activity: Activity, srcFile: File, savePath: String, width: Int, height: Int, requestCode: Int){
+    fun crop(activity: Activity, srcFile: File, savePath: String, width: Int, height: Int,
+             fileProvider: String, requestCode: Int){
         val saveFile = checkFile(savePath);
         val intent = Intent("com.android.camera.action.CROP");
         val uri: Uri
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            val packageName = activity.packageName;
-            uri = FileProvider.getUriForFile(activity, "$packageName.fileProvider", srcFile);
+            uri = FileProvider.getUriForFile(activity, fileProvider, srcFile);
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
         } else {
             uri = Uri.fromFile(srcFile);
