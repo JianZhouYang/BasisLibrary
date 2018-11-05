@@ -1,4 +1,4 @@
-package com.yjz.kotlin.util
+package com.yjz.support.util
 
 import android.support.v4.util.SimpleArrayMap
 import org.jetbrains.annotations.NotNull

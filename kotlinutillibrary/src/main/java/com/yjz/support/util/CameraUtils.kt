@@ -1,4 +1,4 @@
-package com.yjz.kotlin.util
+package com.yjz.support.util
 
 import android.app.Activity
 import android.content.Intent
