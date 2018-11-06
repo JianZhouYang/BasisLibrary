@@ -16,7 +16,6 @@ import java.io.File;
 
 public class PhotographDemoActivity extends AppCompatActivity {
     private ImageView mShowPhotoIv;
-    private String savePath;
     private String cutSavePath;
     private String fileProvider = BuildConfig.APPLICATION_ID + ".fileProvider";
 
@@ -25,13 +24,14 @@ public class PhotographDemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photograph_demo);
 
-        savePath = getExternalFilesDir(null) + "/111.jpg";
+        String savePath = getExternalFilesDir(null) + "/111.jpg";
         cutSavePath = getExternalFilesDir(null) + "/222.jpg";
 
         mShowPhotoIv = findViewById(R.id.iv_show_photo);
 
         findViewById(R.id.btn_take_a_photo).setOnClickListener(v -> {
-            CameraUtils.INSTANCE.capture(PhotographDemoActivity.this, savePath, fileProvider, CameraUtils.PHOTO_GRAPH_REQUEST);
+            CameraUtils.INSTANCE.capture(PhotographDemoActivity.this, savePath,
+                    fileProvider, CameraUtils.PHOTO_GRAPH_REQUEST);
         });
 
     }
@@ -39,12 +39,18 @@ public class PhotographDemoActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CameraUtils.PHOTO_GRAPH_REQUEST && resultCode == Activity.RESULT_OK) {
-            CameraUtils.INSTANCE.crop(this, new File(savePath), cutSavePath, 100, 100, fileProvider, CameraUtils.PHOTO_CUTTING_REQUEST);
+            File file = CameraUtils.INSTANCE.getCaptureFile();
+            if (null != file) {
+                CameraUtils.INSTANCE.crop(this, file, cutSavePath, 100, 100, fileProvider, CameraUtils.PHOTO_CUTTING_REQUEST);
+            }
         } else if (requestCode == CameraUtils.PHOTO_CUTTING_REQUEST && resultCode == Activity.RESULT_OK) {
-            Bitmap bitmap = BitmapFactory.decodeFile(cutSavePath);
-            if (null != bitmap) {
-                BitmapDrawable drawable = new BitmapDrawable(bitmap);
-                mShowPhotoIv.setImageDrawable(drawable);
+            File file = CameraUtils.INSTANCE.getCropFile();
+            if (null != file) {
+                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+                if (null != bitmap) {
+                    BitmapDrawable drawable = new BitmapDrawable(bitmap);
+                    mShowPhotoIv.setImageDrawable(drawable);
+                }
             }
         }
     }
