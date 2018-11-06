@@ -19,6 +19,11 @@ object CameraUtils {
     /**启动系统照片裁剪器请求码 */
     const val PHOTO_CUTTING_REQUEST = 111
 
+    /**拍照保存路径*/
+    private var captureSavePath: String?  = null
+    /**裁剪保存路径*/
+    private var cropSavePath: String?  = null
+
     /**
      * 相机拍照
      * @param activity
@@ -27,21 +32,28 @@ object CameraUtils {
      * @param requestCode
      */
     fun capture(activity: Activity, savePath: String, fileProvider: String, requestCode: Int){
+        captureSavePath = savePath
         val file = File(savePath)
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        val uri: Uri;
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        val uri: Uri
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            uri = FileProvider.getUriForFile(activity, fileProvider, file);
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            uri = FileProvider.getUriForFile(activity, fileProvider, file)
+            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         } else {
-            uri = Uri.fromFile(file);
+            uri = Uri.fromFile(file)
         }
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-        intent.putExtra("autofocus", true); // 自动对焦
-        intent.putExtra("fullScreen", false); // 全屏
-        intent.putExtra("showActionIcons", false);
-        activity.startActivityForResult(intent, requestCode);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri)
+        intent.putExtra("autofocus", true) // 自动对焦
+        intent.putExtra("fullScreen", false) // 全屏
+        intent.putExtra("showActionIcons", false)
+        activity.startActivityForResult(intent, requestCode)
     }
+
+    /**
+     * 获取拍照的图片文件
+     * @return File or null
+     */
+    fun getCaptureFile(): File? = captureSavePath?.let { File(captureSavePath) }
 
     /**
      * 启动照片裁剪
@@ -55,26 +67,33 @@ object CameraUtils {
      */
     fun crop(activity: Activity, srcFile: File, savePath: String, width: Int, height: Int,
              fileProvider: String, requestCode: Int){
-        val intent = Intent("com.android.camera.action.CROP");
+        cropSavePath = savePath
+        val intent = Intent("com.android.camera.action.CROP")
         val uri: Uri
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            uri = FileProvider.getUriForFile(activity, fileProvider, srcFile);
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+            uri = FileProvider.getUriForFile(activity, fileProvider, srcFile)
+            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
         } else {
-            uri = Uri.fromFile(srcFile);
+            uri = Uri.fromFile(srcFile)
         }
-        intent.setDataAndType(uri, "image/*");
+        intent.setDataAndType(uri, "image/*")
         // 设置裁剪
-        intent.putExtra("crop", "true");
+        intent.putExtra("crop", "true")
         // aspectX aspectY 是宽高的比例
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
+        intent.putExtra("aspectX", 1)
+        intent.putExtra("aspectY", 1)
         // outputX outputY 是裁剪图片宽高
-        intent.putExtra("outputX", width);
-        intent.putExtra("outputY", height);
-        intent.putExtra("scale", true);
-        intent.putExtra("return-data", false);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(File(savePath)));
+        intent.putExtra("outputX", width)
+        intent.putExtra("outputY", height)
+        intent.putExtra("scale", true)
+        intent.putExtra("return-data", false)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(File(savePath)))
         activity.startActivityForResult(intent, requestCode)
     }
+
+    /**
+     * 获取裁剪后的图片文件
+     * @return File or null
+     */
+    fun getCropFile(): File? = cropSavePath?.let { File(cropSavePath) }
 }
