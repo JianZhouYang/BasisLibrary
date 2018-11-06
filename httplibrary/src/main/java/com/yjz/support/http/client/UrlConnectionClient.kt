@@ -50,7 +50,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
             if (HttpURLConnection.HTTP_OK == responseCode) {
                 val reader = BufferedReader(InputStreamReader(con.inputStream))
                 val sb = StringBuffer()
-                var line: String? = ""
+                var line = ""
                 reader.use {
                     while (it.readLine().also { line = it } != null){
                         sb.append(line)
@@ -74,6 +74,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
             con.doOutput = true
             con.doInput = true
             con.useCaches = false
+
             val sb = StringBuilder()
             val map = request.getParams()
             for ((key, value) in map) {
@@ -82,15 +83,15 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
             if (sb.isNotEmpty()) {
                 sb.deleteCharAt(0)
             }
-            val out = PrintWriter(con.outputStream)
-            out.print(sb.toString())
+            val out = DataOutputStream(con.outputStream)
+            out.writeBytes(sb.toString())
             out.flush()
 
             val responseCode  = con.responseCode
             if (HttpURLConnection.HTTP_OK == responseCode) {
                 val reader = BufferedReader(InputStreamReader(con.inputStream))
                 val sb = StringBuffer()
-                var line: String? = ""
+                var line = ""
                 reader.use {
                     while (it.readLine().also { line = it } != null){
                         sb.append(line)
@@ -128,7 +129,15 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 val sb = StringBuilder()
                 val map = request.getParams()
                 for ((key, value) in map) {
-                    sb.append("&$key=").append(URLEncoder.encode(value))
+                    sb.append(towHyphens)
+                            .append(boundary)
+                            .append(end).append("&$key=").append(URLEncoder.encode(value))
+                            .append("Content-Disposition: form-data; name=\"$key\"$end")
+                            .append("Content-Type: text/plain; charset=utf-8$end")
+                            .append("Content-Transfer-Encoding: 8bit$end")
+                            .append(end)// 参数头设置完以后需要两个换行，然后才是参数内容
+                            .append(value)
+                            .append(end)
                 }
                 if (sb.isNotEmpty()) {
                     sb.deleteCharAt(0)
@@ -148,21 +157,37 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 var len = -1
                 var currSize: Long = 0//当前已经读取的字节数
                 val totalSize: Long = it.file.length()
-                fStream.use { fs ->
-                    ds.use {
+
+                ds.use {
+                    fStream.use { fs ->
                         while (fs.read(buffer).also { len = it } != -1){
                             it.write(buffer, 0, len)
                             currSize += len
                             callback?.onProgress(currSize, totalSize, len == -1)
                         }
                     }
-                }
-                ds.writeBytes(end)
-                ds.writeBytes(towHyphens + boundary + towHyphens + end)
-                ds.flush()
-                callback?.onProgress(currSize, totalSize, len == -1)
 
-                //TODO 接收返回信息
+                    ds.writeBytes(end)
+                    ds.writeBytes(towHyphens + boundary + towHyphens + end)
+                    ds.flush()
+                    callback?.onProgress(currSize, totalSize, len == -1)
+                }
+
+                val responseCode  = con.responseCode
+                if (HttpURLConnection.HTTP_OK == responseCode) {
+                    val reader = BufferedReader(InputStreamReader(con.inputStream))
+                    val sb = StringBuffer()
+                    var line: String? = ""
+                    reader.use {
+                        while (it.readLine().also { line = it } != null){
+                            sb.append(line)
+                        }
+                    }
+                    callback?.onSuccess(responseCode, sb.toString())
+                } else {
+                    callback?.onError(responseCode, con.responseMessage)
+                }
+                con.disconnect()
 
             }
         } ?: throw IllegalArgumentException("请使用UploadFileBuilder对象创建request......")

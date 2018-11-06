@@ -46,16 +46,16 @@ internal fun downLoadSaveFile(inputStream: InputStream, totalSize: Long, request
             dir.mkdirs()
         }
         fos = file.outputStream()
-        inputStream.use {input ->
-            fos.use {
+        fos.use {
+            inputStream.use {input ->
                 while (input.read(buf).also { len = it } != -1){
                     it.write(buf, 0, len)
                     currSize += len
                     callback?.onProgress(currSize, totalSize, len == -1)
                 }
             }
+            fos!!.flush()
         }
-        fos!!.flush()
         callback?.onProgress(currSize, totalSize, len == -1)
     } catch (e: Exception) {
         e.printStackTrace()
