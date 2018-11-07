@@ -29,11 +29,35 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     override fun getRealHttpClient(): URLConnection? = null
 
     override fun <T> get(request: HttpRequest): T? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val con = createConnection(createGetUrl(request.getUrl(), request.getParams()))
+        con.requestMethod = "GET"
+        con.doOutput = false
+        con.doInput = true
+        con.connect()
+        return con as? T
     }
 
     override fun <T> post(request: HttpRequest): T? {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val con = createConnection(request.getUrl())
+        con.requestMethod = "POST"
+        con.doOutput = true
+        con.doInput = true
+        con.useCaches = false
+
+        val sb = StringBuilder()
+        val map = request.getParams()
+        for ((key, value) in map) {
+            sb.append("&$key=").append(URLEncoder.encode(value))
+        }
+        if (sb.isNotEmpty()) {
+            sb.deleteCharAt(0)
+        }
+        val out = DataOutputStream(con.outputStream)
+        out.use {
+            out.writeBytes(sb.toString())
+            out.flush()
+        }
+        return con as? T
     }
 
     override fun get(request: HttpRequest, callback: ResponseCallback?) {
