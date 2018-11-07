@@ -48,15 +48,30 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
             con.connect()
             val responseCode  = con.responseCode
             if (HttpURLConnection.HTTP_OK == responseCode) {
-                val reader = BufferedReader(InputStreamReader(con.inputStream))
-                val sb = StringBuffer()
-                var line = ""
-                reader.use {
-                    while (it.readLine().also { line = it } != null){
-                        sb.append(line)
+                if (!request.isReturnByteArray()) {
+                    val reader = BufferedReader(InputStreamReader(con.inputStream))
+                    val sb = StringBuffer()
+                    var line: String? = null
+                    reader.use {
+                        while (it.readLine().also { line = it } != null){
+                            sb.append(line)
+                        }
+                    }
+                    callback?.onSuccess(responseCode, sb.toString())
+                } else {
+                    val buf = ByteArray(1024 * 512)
+                    val output = ByteArrayOutputStream()
+                    var len = 0
+                    output.use {byteArrayOutput ->
+                        con.inputStream.use {input ->
+                            while (input.read(buf).also { len = it } != -1){
+                                byteArrayOutput.write(buf, 0, len)
+                            }
+                        }
+                        output.flush()
+                        callback?.onSuccess(responseCode, output.toByteArray())
                     }
                 }
-                callback?.onSuccess(responseCode, sb.toString())
             } else {
                 callback?.onError(responseCode, con.responseMessage)
             }
@@ -84,20 +99,37 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 sb.deleteCharAt(0)
             }
             val out = DataOutputStream(con.outputStream)
-            out.writeBytes(sb.toString())
-            out.flush()
+            out.use {
+                out.writeBytes(sb.toString())
+                out.flush()
+            }
 
             val responseCode  = con.responseCode
             if (HttpURLConnection.HTTP_OK == responseCode) {
-                val reader = BufferedReader(InputStreamReader(con.inputStream))
-                val sb = StringBuffer()
-                var line = ""
-                reader.use {
-                    while (it.readLine().also { line = it } != null){
-                        sb.append(line)
+                if (!request.isReturnByteArray()) {
+                    val reader = BufferedReader(InputStreamReader(con.inputStream))
+                    val sb = StringBuffer()
+                    var line: String? = null
+                    reader.use {
+                        while (it.readLine().also { line = it } != null){
+                            sb.append(line)
+                        }
+                    }
+                    callback?.onSuccess(responseCode, sb.toString())
+                } else {
+                    val buf = ByteArray(1024 * 512)
+                    val output = ByteArrayOutputStream()
+                    var len = 0
+                    output.use {byteArrayOutput ->
+                        con.inputStream.use {input ->
+                            while (input.read(buf).also { len = it } != -1){
+                                byteArrayOutput.write(buf, 0, len)
+                            }
+                        }
+                        output.flush()
+                        callback?.onSuccess(responseCode, output.toByteArray())
                     }
                 }
-                callback?.onSuccess(responseCode, sb.toString())
             } else {
                 callback?.onError(responseCode, con.responseMessage)
             }
@@ -177,7 +209,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
                 if (HttpURLConnection.HTTP_OK == responseCode) {
                     val reader = BufferedReader(InputStreamReader(con.inputStream))
                     val sb = StringBuffer()
-                    var line: String? = ""
+                    var line: String? = null
                     reader.use {
                         while (it.readLine().also { line = it } != null){
                             sb.append(line)

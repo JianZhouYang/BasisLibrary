@@ -135,7 +135,7 @@ class DefaultOkHttpClient : IHttpClient<OkHttpClient> {
                         if (!request.isReturnByteArray()) {
                             callback?.onSuccess(response.code(), response.body()?.string())
                         } else {
-                            callback?.onSuccess(response.code(), null, response?.body()?.bytes())
+                            callback?.onSuccess(response.code(), response?.body()?.bytes())
                         }
                     } else {
                         callback?.onError(response.code(), response.message())
