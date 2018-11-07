@@ -62,7 +62,7 @@ class HttpRequest private constructor(private val mData: RequestData) {
          * true: 请求结果返回字节数据; false: 请求结果不返回字节数组;
          * 默认为false
          */
-        fun setReturnBtyeArray(isReturn: Boolean): Builder{
+        fun setReturnByteArray(isReturn: Boolean): Builder{
             data.mIsReturnByteArray = isReturn
             return this
         }
