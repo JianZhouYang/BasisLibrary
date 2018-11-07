@@ -5,8 +5,11 @@ interface ResponseCallback {
 
     /**
      * 请求响应成功
+     * @param code 成功码
+     * @param content 默认返回String类型; 当调用
+     * HttpRequest.Builder().setReturnByteArray()设置true时，返回二进制数组
      */
-    fun onSuccess(code: Int, content: String?, byteArray: ByteArray? = null)
+    fun onSuccess(code: Int, content: Any?)
 
     /**
      * 请求响应失败
