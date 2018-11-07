@@ -5,7 +5,7 @@ import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.*
 
-class ProgressRequestBody(private val requestBody: RequestBody, private val callback: UploadCallback?) : RequestBody() {
+internal class ProgressRequestBody(private val requestBody: RequestBody, private val callback: UploadCallback?) : RequestBody() {
     override fun contentType(): MediaType? = requestBody.contentType()
 
     override fun contentLength(): Long = requestBody.contentLength()
