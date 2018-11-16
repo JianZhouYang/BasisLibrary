@@ -1,5 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 27
@@ -42,5 +43,7 @@ dependencies {
     implementation rootProject.ext.dependencies["fresco-imagepipeline-okhttp"]
     implementation rootProject.ext.dependencies["fresco-webpsupport"]
 
+    implementation rootProject.ext.dependencies["constraint-layout"]
+    implementation rootProject.ext.dependencies["recyclerview-v7"]
     implementation 'com.yjz.support:util:1.0.0-20181112.133740-1'
 }
