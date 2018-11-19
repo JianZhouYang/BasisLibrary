@@ -1,4 +1,4 @@
-package com.yjz.support.imageselector.ui.adapter;
+package com.yjz.support.imageselector.adapterbase;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

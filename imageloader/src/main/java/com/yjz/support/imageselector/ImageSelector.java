@@ -74,14 +74,31 @@ public class ImageSelector implements IImageSelect, ICamera, LifecycleObserver {
             }
 
             @Override
-            public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-                ArrayList<ImageBean> list = new ArrayList<>();
-                //TODO
+            public void onLoadFinished(@NonNull Loader<Cursor> loader, final Cursor cursor) {
+                new Thread(){
+                    public void run(){
+                        ArrayList<FileItem> list = new ArrayList<>();
+                        if (cursor != null) {
+                            if (cursor.getCount() != 0) {
+                                while (cursor.moveToNext()) {
+                                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                                    String fileName =
+                                            cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+                                    String size = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.SIZE));
+                                    String date = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED));
 
+                                    FileItem item = new FileItem(path, fileName, size, date);
+                                    list.add(item);
+                                }
+                            }
+                            cursor.close();
+                        }
 
-                if (null != callback) {
-                    callback.onQueryFinish(list);
-                }
+                        if (null != callback) {
+                            callback.onQueryFinish(list);
+                        }
+                    }
+                }.start();
             }
 
             @Override

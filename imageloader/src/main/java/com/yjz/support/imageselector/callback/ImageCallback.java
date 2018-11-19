@@ -1,6 +1,6 @@
 package com.yjz.support.imageselector.callback;
 
-import com.yjz.support.imageselector.ImageBean;
+import com.yjz.support.imageselector.FileItem;
 import java.util.List;
 
 public interface ImageCallback {
@@ -13,5 +13,5 @@ public interface ImageCallback {
      * 查询完成
      * @param list
      */
-    void onQueryFinish(List<ImageBean> list);
+    void onQueryFinish(List<FileItem> list);
 }
