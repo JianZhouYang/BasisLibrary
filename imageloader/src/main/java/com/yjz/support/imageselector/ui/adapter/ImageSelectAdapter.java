@@ -1,13 +1,11 @@
 package com.yjz.support.imageselector.ui.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.widget.ImageView;
 
 import com.yjz.support.R;
-import com.yjz.support.imageselector.FileItem;
+import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.adapterbase.RecyclerDefaultAdapter;
 
 import java.util.List;

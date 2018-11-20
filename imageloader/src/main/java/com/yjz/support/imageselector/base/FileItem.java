@@ -1,8 +1,13 @@
-package com.yjz.support.imageselector;
+package com.yjz.support.imageselector.base;
 
 import java.io.Serializable;
 
 public class FileItem implements Serializable {
+
+    /**拍照*/
+    public static final String ACTION_TYPE_CAMERA = "action.type.camera";
+    /**显示*/
+    public static final String ACTION_TYPE_SHOW = "action.type.show";
 
     /**图片路径*/
     public String path;
@@ -19,12 +24,15 @@ public class FileItem implements Serializable {
     /**图片目录名称*/
     public String parentDirName;
 
+    public String actionType;
+
 
     public FileItem(String path, String name, String size, String date){
         this.path = path;
         this.name = name;
         this.size = size;
         this.date = date;
+        this.actionType = ACTION_TYPE_SHOW;
     }
 
 }

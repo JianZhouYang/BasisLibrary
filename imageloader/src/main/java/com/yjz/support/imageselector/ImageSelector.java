@@ -14,19 +14,19 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
+
+import com.yjz.support.imageselector.base.BaseSelector;
+import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.callback.ImageCallback;
-import com.yjz.support.imageselector.iface.ICamera;
-import com.yjz.support.imageselector.iface.IImageSelect;
 import com.yjz.support.util.CameraUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelector implements IImageSelect, ICamera, LifecycleObserver {
-    /**拍照请求码*/
-    public static final int IMAGE_CAPTURE_REQUEST = 88;
-    /**裁剪请求码*/
-    public static final int IMAGE_CROP_REQUEST = 89;
+public class ImageSelector extends BaseSelector implements LifecycleObserver {
+
+    private final String DIR_NAME_KEY = "dir_name_key";
 
     private final int ALL_IMAGES = 0;
     private final int DIR_IMAGES = 1;
@@ -42,29 +42,32 @@ public class ImageSelector implements IImageSelect, ICamera, LifecycleObserver {
     private String lastCapturePath;
     private String lastCropPath;
     private LoaderManager mLoaderManager;
-    private Activity mActivity;
+    private final LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks;
 
     public ImageSelector(Activity activity){
+        this(activity, null);
+    }
+
+    public ImageSelector(Activity activity, ImageCallback callback){
+        super(activity, callback);
         if (activity instanceof AppCompatActivity) {
             ((AppCompatActivity)activity).getLifecycle().addObserver(this);
         }
-        mActivity = activity;
-        mLoaderManager = ((FragmentActivity)activity).getSupportLoaderManager();
-    }
 
-    private void getImages(int id, final String dirName, final ImageCallback callback){
-        mLoaderManager.restartLoader(id, null, new LoaderManager.LoaderCallbacks<Cursor>() {
+        mLoaderManager = ((FragmentActivity)activity).getSupportLoaderManager();
+        mLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
             @NonNull
             @Override
             public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-                if (null != callback) {
-                    callback.onQueryStart();
+                if (null != mImageCallback) {
+                    mImageCallback.onQueryStart();
                 }
 
                 if (id == ALL_IMAGES) {
                     return new CursorLoader(mActivity, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
                             null, null, IMAGE_PROJECTION[2] + " DESC");
                 } else if (id == DIR_IMAGES) {
+                    String dirName = args.getString(DIR_NAME_KEY);
                     return new CursorLoader(mActivity, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, IMAGE_PROJECTION,
                             IMAGE_PROJECTION[0] + " like '%" + dirName + "%'", null,
                             IMAGE_PROJECTION[2] + " DESC");
@@ -74,28 +77,29 @@ public class ImageSelector implements IImageSelect, ICamera, LifecycleObserver {
             }
 
             @Override
-            public void onLoadFinished(@NonNull Loader<Cursor> loader, final Cursor cursor) {
-                new Thread(){
-                    public void run(){
+            public void onLoadFinished(@NonNull final Loader<Cursor> loader, final Cursor cursor) {
+                new Thread() {
+                    public void run() {
                         ArrayList<FileItem> list = new ArrayList<>();
-                        if (cursor != null) {
-                            if (cursor.getCount() != 0) {
-                                while (cursor.moveToNext()) {
-                                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
-                                    String fileName =
-                                            cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-                                    String size = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.SIZE));
-                                    String date = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED));
+                        if (cursor.getCount() != 0) {
+                            while (cursor.moveToNext()) {
+                                String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                                String fileName =
+                                        cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+                                String size = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.SIZE));
+                                String date = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED));
 
-                                    FileItem item = new FileItem(path, fileName, size, date);
-                                    list.add(item);
-                                }
+                                FileItem item = new FileItem(path, fileName, size, date);
+                                list.add(item);
                             }
-                            cursor.close();
                         }
 
-                        if (null != callback) {
-                            callback.onQueryFinish(list);
+                        if (null != mImageCallback) {
+                            if (loader.getId() == ALL_IMAGES) {
+                                mImageCallback.onQueryFinish(ImageCallback.Type.TYPE_ALL_IMAGES, list);
+                            } else {
+                                mImageCallback.onQueryFinish(ImageCallback.Type.TYPE_DIR_IMAGES, list);
+                            }
                         }
                     }
                 }.start();
@@ -105,23 +109,28 @@ public class ImageSelector implements IImageSelect, ICamera, LifecycleObserver {
             public void onLoaderReset(@NonNull Loader<Cursor> loader) {
 
             }
-        });
+        };
     }
 
-
-    @Override
-    public void getAllImages(ImageCallback callback) {
-        getImages(ALL_IMAGES, null, callback);
+    private void getImages(int id, final String dirName){
+        Bundle bundle = null;
+        if (id == DIR_IMAGES) {
+            bundle = new Bundle();
+            bundle.putString(DIR_NAME_KEY, !TextUtils.isEmpty(dirName) ? dirName : "");
+        }
+        mLoaderManager.restartLoader(id, bundle, mLoaderCallbacks);
     }
 
-    @Override
+    public void getAllImages() {
+        getImages(ALL_IMAGES, null);
+    }
+
     public List<String> getImageDirNames() {
         return null;
     }
 
-    @Override
-    public void getImagesByDirName(String dirName, ImageCallback callback) {
-        getImages(DIR_IMAGES, dirName, callback);
+    public void getImagesByDirName(String dirName) {
+        getImages(DIR_IMAGES, dirName);
     }
 
     @Override
