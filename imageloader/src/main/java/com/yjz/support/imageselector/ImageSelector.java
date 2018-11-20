@@ -1,9 +1,6 @@
 package com.yjz.support.imageselector;
 
 import android.app.Activity;
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleObserver;
-import android.arch.lifecycle.OnLifecycleEvent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -13,9 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-
 import com.yjz.support.imageselector.base.BaseSelector;
 import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.callback.ImageCallback;
@@ -24,7 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelector extends BaseSelector implements LifecycleObserver {
+public class ImageSelector extends BaseSelector {
 
     private final String DIR_NAME_KEY = "dir_name_key";
 
@@ -42,6 +37,7 @@ public class ImageSelector extends BaseSelector implements LifecycleObserver {
     private String lastCapturePath;
     private String lastCropPath;
     private LoaderManager mLoaderManager;
+    private ImageCallback mImageCallback;
     private final LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks;
 
     public ImageSelector(Activity activity){
@@ -49,11 +45,9 @@ public class ImageSelector extends BaseSelector implements LifecycleObserver {
     }
 
     public ImageSelector(Activity activity, ImageCallback callback){
-        super(activity, callback);
-        if (activity instanceof AppCompatActivity) {
-            ((AppCompatActivity)activity).getLifecycle().addObserver(this);
-        }
+        super(activity);
 
+        mImageCallback = callback;
         mLoaderManager = ((FragmentActivity)activity).getSupportLoaderManager();
         mLoaderCallbacks = new LoaderManager.LoaderCallbacks<Cursor>() {
             @NonNull
@@ -112,6 +106,10 @@ public class ImageSelector extends BaseSelector implements LifecycleObserver {
         };
     }
 
+    public void setImageCallback(ImageCallback callback){
+        mImageCallback = callback;
+    }
+
     private void getImages(int id, final String dirName){
         Bundle bundle = null;
         if (id == DIR_IMAGES) {
@@ -156,16 +154,13 @@ public class ImageSelector extends BaseSelector implements LifecycleObserver {
     }
 
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    public void destroy(){
+    @Override
+    public void destroy() {
+        super.destroy();
         if (null != mLoaderManager) {
             mLoaderManager.destroyLoader(ALL_IMAGES);
             mLoaderManager.destroyLoader(DIR_IMAGES);
         }
-        if (mActivity instanceof AppCompatActivity) {
-            ((AppCompatActivity)mActivity).getLifecycle().addObserver(this);
-        }
         mLoaderManager = null;
-        mActivity = null;
     }
 }
