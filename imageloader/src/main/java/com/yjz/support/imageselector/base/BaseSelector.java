@@ -27,7 +27,7 @@ public abstract class BaseSelector implements ICamera, LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void destroy(){
-        if (mActivity instanceof AppCompatActivity) {
+        if (null != mActivity && mActivity instanceof AppCompatActivity) {
             ((AppCompatActivity)mActivity).getLifecycle().removeObserver(this);
         }
         mActivity = null;
