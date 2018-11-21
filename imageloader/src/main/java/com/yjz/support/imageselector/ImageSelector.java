@@ -14,12 +14,13 @@ import android.text.TextUtils;
 import com.yjz.support.imageselector.base.BaseSelector;
 import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.callback.ImageCallback;
+import com.yjz.support.imageselector.iface.IImageSelect;
 import com.yjz.support.util.CameraUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageSelector extends BaseSelector {
+public class ImageSelector extends BaseSelector implements IImageSelect {
 
     private final String DIR_NAME_KEY = "dir_name_key";
 
@@ -38,6 +39,7 @@ public class ImageSelector extends BaseSelector {
     private String lastCropPath;
     private LoaderManager mLoaderManager;
     private ImageCallback mImageCallback;
+    private ImageCallback mTempImageCallback;
     private final LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks;
 
     public ImageSelector(Activity activity){
@@ -55,6 +57,10 @@ public class ImageSelector extends BaseSelector {
             public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
                 if (null != mImageCallback) {
                     mImageCallback.onQueryStart();
+                }
+
+                if (null != mTempImageCallback) {
+                    mTempImageCallback.onQueryStart();
                 }
 
                 if (id == ALL_IMAGES) {
@@ -89,11 +95,12 @@ public class ImageSelector extends BaseSelector {
                         }
 
                         if (null != mImageCallback) {
-                            if (loader.getId() == ALL_IMAGES) {
-                                mImageCallback.onQueryFinish(ImageCallback.Type.TYPE_ALL_IMAGES, list);
-                            } else {
-                                mImageCallback.onQueryFinish(ImageCallback.Type.TYPE_DIR_IMAGES, list);
-                            }
+                            sendMsg(mImageCallback, list, loader);
+                        }
+
+                        if (null != mTempImageCallback) {
+                            sendMsg(mTempImageCallback, list, loader);
+                            mTempImageCallback = null;
                         }
                     }
                 }.start();
@@ -104,6 +111,14 @@ public class ImageSelector extends BaseSelector {
 
             }
         };
+    }
+
+    private void sendMsg(ImageCallback callback, ArrayList<FileItem> list, @NonNull Loader<Cursor> loader) {
+        if (loader.getId() == ALL_IMAGES) {
+            callback.onQueryFinish(ImageCallback.Type.TYPE_ALL_IMAGES, list);
+        } else {
+            callback.onQueryFinish(ImageCallback.Type.TYPE_DIR_IMAGES, list);
+        }
     }
 
     public void setImageCallback(ImageCallback callback){
@@ -121,6 +136,16 @@ public class ImageSelector extends BaseSelector {
 
     public void getAllImages() {
         getImages(ALL_IMAGES, null);
+    }
+
+    @Override
+    public void getAllImages(ImageCallback callback) {
+        mTempImageCallback = callback;
+    }
+
+    @Override
+    public void getImagesByDirName(String dirName, ImageCallback callback) {
+        mTempImageCallback = callback;
     }
 
     public List<String> getImageDirNames() {
@@ -156,7 +181,6 @@ public class ImageSelector extends BaseSelector {
 
     @Override
     public void destroy() {
-        super.destroy();
         if (null != mLoaderManager) {
             mLoaderManager.destroyLoader(ALL_IMAGES);
             mLoaderManager.destroyLoader(DIR_IMAGES);
