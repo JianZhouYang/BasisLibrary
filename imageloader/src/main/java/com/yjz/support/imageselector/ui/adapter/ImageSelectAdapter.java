@@ -3,17 +3,14 @@ package com.yjz.support.imageselector.ui.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import com.yjz.support.R;
+import com.yjz.support.imageloader.R;
 import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.adapterbase.RecyclerDefaultAdapter;
-
 import java.util.List;
 
 public class ImageSelectAdapter extends RecyclerDefaultAdapter<FileItem> {

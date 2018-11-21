@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.widget.Toast
-import com.yjz.support.R
+import com.yjz.support.imageloader.R
 import com.yjz.support.imageselector.base.FileItem
 import com.yjz.support.imageselector.ImageSelector
 import com.yjz.support.imageselector.callback.ImageCallback
@@ -61,10 +61,4 @@ class ImageSelectActivity: AppCompatActivity() {
         mSelector.getAllImages()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (this@ImageSelectActivity !is AppCompatActivity) {
-            mSelector.destroy()
-        }
-    }
 }
