@@ -1,5 +1,7 @@
 package com.yjz.support.imageselector.ui
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -13,16 +15,26 @@ import kotlinx.android.synthetic.main.activity_image_select_layout.*
 
 
 class ImageSelectActivity: AppCompatActivity() {
+    private val data_key = "data.key"
+
     private val mSelector: ImageSelector by lazy {
         ImageSelector(this)
+    }
+
+    fun jump2Me(activity: Activity, enabledCamera: Boolean){
+        val intent = Intent(activity, ImageSelectActivity::class.java)
+        intent.putExtra(data_key, enabledCamera)
+        activity.startActivity(intent)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image_select_layout)
 
-        aty_image_select_show_rv.layoutManager = GridLayoutManager(this, 3)
+        val enabledCamera = intent.getBooleanExtra(data_key, true)
 
+        aty_image_select_show_rv.layoutManager = GridLayoutManager(this, 3)
+        aty_image_select_show_rv.isEnabled
 
         mSelector.setImageCallback(object: ImageCallback {
             override fun onQueryStart() {
@@ -33,6 +45,11 @@ class ImageSelectActivity: AppCompatActivity() {
                 list?.let {
                     this@ImageSelectActivity.runOnUiThread{
                         if (type == ImageCallback.Type.TYPE_ALL_IMAGES) {
+                            if (enabledCamera) {
+                                val item = FileItem("", "", "", "")
+                                item.actionType = FileItem.ACTION_TYPE_CAMERA
+                                list.add(0, item)
+                            }
                             val adapter = ImageSelectAdapter(this@ImageSelectActivity, list)
                             aty_image_select_show_rv.adapter = adapter
                         }
@@ -46,6 +63,8 @@ class ImageSelectActivity: AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mSelector.destroy()
+        if (this@ImageSelectActivity !is AppCompatActivity) {
+            mSelector.destroy()
+        }
     }
 }

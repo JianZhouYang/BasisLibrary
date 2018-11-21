@@ -11,6 +11,8 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.text.TextUtils;
+import android.util.Log;
+
 import com.yjz.support.imageselector.base.BaseSelector;
 import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.callback.ImageCallback;
@@ -82,6 +84,7 @@ public class ImageSelector extends BaseSelector implements IImageSelect {
                     public void run() {
                         ArrayList<FileItem> list = new ArrayList<>();
                         if (cursor.getCount() != 0) {
+                            cursor.moveToFirst();
                             while (cursor.moveToNext()) {
                                 String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
                                 String fileName =
