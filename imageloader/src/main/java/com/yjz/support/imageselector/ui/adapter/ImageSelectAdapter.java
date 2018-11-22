@@ -11,10 +11,13 @@ import android.widget.Toast;
 import com.yjz.support.imageloader.R;
 import com.yjz.support.imageselector.base.FileItem;
 import com.yjz.support.imageselector.adapterbase.RecyclerDefaultAdapter;
+import com.yjz.support.imageselector.base.MemoryCache;
+
 import java.util.List;
 
 public class ImageSelectAdapter extends RecyclerDefaultAdapter<FileItem> {
     private int mWidth;
+    private MemoryCache mMemoryCache;
 
     public ImageSelectAdapter(Context context) {
         super(context);
@@ -27,9 +30,15 @@ public class ImageSelectAdapter extends RecyclerDefaultAdapter<FileItem> {
     }
 
     private void init() {
+        mMemoryCache = new MemoryCache();
         DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
 //        mWidth = dm.widthPixels / 4;
         mWidth = 100;
+
+    }
+
+    public void clearMemoryCache(){
+        mMemoryCache.clear();
     }
 
     @Override
@@ -38,19 +47,11 @@ public class ImageSelectAdapter extends RecyclerDefaultAdapter<FileItem> {
         Log.e("yjz", "width====>" + iv.getMeasuredWidth());
         Log.e("yjz", "height====>" + iv.getMeasuredHeight());
 
-        Bitmap bitmap = (Bitmap) iv.getTag();
-        if (null != bitmap) {
-            bitmap.recycle();
-        }
 
         if (item.actionType == FileItem.ACTION_TYPE_CAMERA) {
             iv.setImageResource(android.R.drawable.ic_menu_camera);
         } else {
-
-//            bitmap = BitmapFactory.decodeFile(item.path, options);
-            bitmap = compressScaleBitmap(item.path);
-            iv.setTag(bitmap);
-            iv.setImageBitmap(bitmap);
+            iv.setImageBitmap(mMemoryCache.getBitmapFromMemCache(item.path));
         }
         iv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,22 +59,6 @@ public class ImageSelectAdapter extends RecyclerDefaultAdapter<FileItem> {
                 Toast.makeText(mContext, item.path, Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private Bitmap compressScaleBitmap(String path) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(path, options);
-
-        int toWidth = mWidth;
-        int toHeight = options.outHeight * toWidth / options.outWidth;
-        options.inSampleSize = 6;
-        options.outWidth = toWidth;
-        options.outHeight = toHeight;
-        options.inPreferredConfig = Bitmap.Config.ARGB_4444;
-        options.inJustDecodeBounds = false;
-
-        return BitmapFactory.decodeFile(path, options);
     }
 
     @Override

@@ -21,6 +21,8 @@ class ImageSelectActivity: AppCompatActivity() {
         ImageSelector(this)
     }
 
+    private lateinit var mAdapter: ImageSelectAdapter
+
     fun jump2Me(activity: Activity, enabledCamera: Boolean){
         val intent = Intent(activity, ImageSelectActivity::class.java)
         intent.putExtra(data_key, enabledCamera)
@@ -50,8 +52,8 @@ class ImageSelectActivity: AppCompatActivity() {
                                 item.actionType = FileItem.ACTION_TYPE_CAMERA
                                 list.add(0, item)
                             }
-                            val adapter = ImageSelectAdapter(this@ImageSelectActivity, list)
-                            aty_image_select_show_rv.adapter = adapter
+                            mAdapter = ImageSelectAdapter(this@ImageSelectActivity, list)
+                            aty_image_select_show_rv.adapter = mAdapter
                         }
                     }
                 }
@@ -59,6 +61,12 @@ class ImageSelectActivity: AppCompatActivity() {
         })
 
         mSelector.getAllImages()
+    }
+
+
+    override fun onDestroy() {0
+        super.onDestroy()
+        mAdapter.clearMemoryCache()
     }
 
 }
