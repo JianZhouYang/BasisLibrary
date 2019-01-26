@@ -11,10 +11,11 @@ import com.yjz.support.http.iface.IHttpOperate
  */
 object HttpUtils : IHttpOperate {
 
-    private var mClient: IHttpClient<*>? = null
+    private lateinit var mClient: IHttpClient<*>
+
 
     fun <T>initialization(client: IHttpClient<T>) {
-        if (null != mClient) {
+        if (this::mClient.isInitialized) {
             throw IllegalArgumentException("HttpClient已经初始化，无法重复进行初始化操作！")
         } else {
             mClient = client
@@ -22,45 +23,29 @@ object HttpUtils : IHttpOperate {
     }
 
     fun <T>getRealHttpClient(): T?{
-        return if (null != mClient) {
-            mClient!!.getRealHttpClient() as T?
-        } else {
-            throwError()
-            null
+        return mClient.getRealHttpClient()?.let {
+            it as T
         }
     }
 
     override fun <T> get(request: HttpRequest): T? {
-        return if (null != mClient) {
-            mClient!!.get(request)
-        } else {
-            throwError()
-            null
-        }
+        return mClient.get(request)
     }
 
     override fun <T> post(request: HttpRequest): T? {
-        return if (null != mClient) {
-            mClient!!.post(request)
-        } else {
-            throwError()
-            null
-        }
+        return mClient.post(request)
     }
 
-    override fun get(request: HttpRequest, callback: ResponseCallback?) = mClient?.get(request, callback) ?: throwError()
+    override fun get(request: HttpRequest, callback: ResponseCallback?) = mClient.get(request, callback)
 
-    override fun post(request: HttpRequest, callback: ResponseCallback?) = mClient?.post(request, callback) ?: throwError()
+    override fun post(request: HttpRequest, callback: ResponseCallback?) = mClient.post(request, callback)
 
-    override fun cancel(tag: String) = mClient?.cancel(tag) ?: throwError()
+    override fun cancel(tag: String) = mClient.cancel(tag)
 
-    override fun cancelAll() = mClient?.cancelAll() ?: throwError()
+    override fun cancelAll() = mClient.cancelAll()
 
-    override fun download(request: HttpRequest, callback: DownloadCallback?) = mClient?.download(request, callback) ?: throwError()
+    override fun download(request: HttpRequest, callback: DownloadCallback?) = mClient.download(request, callback)
 
-    override fun upload(request: HttpRequest, callback: UploadCallback?) = mClient?.upload(request, callback) ?: throwError()
+    override fun upload(request: HttpRequest, callback: UploadCallback?) = mClient.upload(request, callback)
 
-    private fun throwError(){
-        throw IllegalArgumentException("HttpClient没有初始化，请先调用initialization()方法进行初始化操作！")
-    }
 }
