@@ -6,7 +6,6 @@ import com.yjz.support.http.callback.ResponseCallback
 import com.yjz.support.http.callback.SimpleResponseCallback
 import com.yjz.support.http.callback.UploadCallback
 import com.yjz.support.http.iface.IHttpClient
-import okhttp3.internal.Util
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
@@ -21,7 +20,7 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
     private fun executorService(): ExecutorService{
         if (null == mExecutorService) {
             mExecutorService = ThreadPoolExecutor(0, Integer.MAX_VALUE, 60,
-                    TimeUnit.SECONDS, SynchronousQueue<Runnable>(), Util.threadFactory("UrlConnection Dispatcher", false))
+                    TimeUnit.SECONDS, SynchronousQueue<Runnable>(), threadFactory("UrlConnection Dispatcher", false))
         }
         return mExecutorService!!
     }
@@ -301,5 +300,13 @@ class UrlConnectionClient : IHttpClient<URLConnection?> {
         con.connectTimeout = 10 * 1000
         con.readTimeout = 10 * 1000
         return con
+    }
+
+    private fun threadFactory(name: String, daemon: Boolean): ThreadFactory {
+        return ThreadFactory { runnable ->
+            val result = Thread(runnable, name)
+            result.isDaemon = daemon
+            result
+        }
     }
 }
